@@ -12,13 +12,11 @@ import (
 
 type UserRepos struct {
 	db *gorm.DB
-	// cache *redis.Client
 }
 
 func NewUserRepo(db *gorm.DB) domains.UserRepo {
 	return &UserRepos{
 		db: db,
-		// cache: cache,
 	}
 }
 
