@@ -1,9 +1,11 @@
 package datasources
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
+	"github.com/go-redis/redis"
 	"github.com/prasetiyo28/go-solid-principle/src/domains"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -12,11 +14,13 @@ import (
 
 type UserRepos struct {
 	db *gorm.DB
+	rc *redis.Client
 }
 
-func NewUserRepo(db *gorm.DB) domains.UserRepo {
+func NewUserRepo(db *gorm.DB, rc *redis.Client) domains.UserRepo {
 	return &UserRepos{
 		db: db,
+		rc: rc,
 	}
 }
 
@@ -85,4 +89,22 @@ func (r *UserRepos) GetUserByEmail(us domains.User) (*domains.User, error) {
 		"email": err,
 	}).Debug("email------")
 	return &user, nil
+}
+
+func (r *UserRepos) GetToken(key string) (*domains.User, error) {
+	var user domains.User
+	serializedValue, err := r.rc.Get(key).Result()
+	json.Unmarshal([]byte(serializedValue), &user)
+
+	logrus.WithFields(logrus.Fields{
+		"data": serializedValue,
+	}).Debug("email------")
+
+	return &user, err
+}
+
+func (r *UserRepos) SetToken(key string, us *domains.User) error { //struct baru
+	serializedValue, _ := json.Marshal(us)
+	err := r.rc.Set(key, string(serializedValue), 0).Err()
+	return err
 }

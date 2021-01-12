@@ -24,10 +24,10 @@ type UserRepo interface {
 	UpdateUser(User) (*User, error)
 	DeleteUser(string) (*string, error)
 	GetUserByEmail(User) (*User, error)
+	GetToken(string) (*User, error)
+	SetToken(string, *User) error
 }
 
-
- 
 type UserUseCase interface {
 	GetUser(interface{}) (*configs.ResponseSuccess, *configs.ResponseError)
 	CreateUser(User) (*configs.ResponseSuccess, *configs.ResponseError)

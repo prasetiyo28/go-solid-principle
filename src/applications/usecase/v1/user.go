@@ -27,7 +27,12 @@ func (uu *UserUseCase) GetUser(id interface{}) (*configs.ResponseSuccess, *confi
 
 	t := time.Now()
 	fmt.Println(t.Format("2006-01-02 15:04:05"))
-	user, err := uu.UsRepo.GetUser(s)
+	// user, err := uu.UsRepo.GetUser(s)
+	// if err != nil {
+	// 	return nil, configs.Failed(400, "FAILED", err.Error())
+	// }
+
+	user, err := uu.UsRepo.GetToken(s)
 	if err != nil {
 		return nil, configs.Failed(400, "FAILED", err.Error())
 	}
@@ -75,7 +80,7 @@ func (uu *UserUseCase) UpdateUser(us domains.User) (*configs.ResponseSuccess, *c
 	return configs.Success(200, "OK", user), nil
 }
 
-func (uu *UserUseCase) DeleteUser(id interface{}) (*configs.ResponseSuccess, *configs.ResponseError) {
+func (uu *UserUseCase) DeleteUser(id interface{}) (*configs.ResponseSuccess, *configs.ResponseError) { //string
 	s, ok := id.(string)
 	if !ok {
 		return nil, configs.Failed(400, "FAILED", "id must be a string")
@@ -102,5 +107,17 @@ func (uu *UserUseCase) Login(us domains.User) (*configs.ResponseSuccess, *config
 		return nil, configs.Failed(400, "FAILED", "Password Didn't match")
 	}
 
-	return configs.Success(200, "OK", user), nil
+	currentTime := time.Now().String()
+	beforHash := []byte(currentTime)
+	hash, err := bcrypt.GenerateFromPassword(beforHash, 10)
+	if err != nil {
+		return nil, configs.Failed(400, "FAILED HASH", err.Error())
+	}
+	token := string(hash)
+
+	errToken := uu.UsRepo.SetToken(token, user)
+	if errToken != nil {
+		return nil, configs.Failed(400, "FAILED", err.Error())
+	}
+	return configs.Success(200, "OK", token), nil
 }

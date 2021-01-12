@@ -53,9 +53,9 @@ func Serve() {
 	}
 	loggers.Init()
 	e := New()
-	authMiddle := middlewares.NewAuthMiddleware(orm)
-	h := routers.NewHandler(orm)
-	e.Use(authMiddle.MiddleGate())
+	// authMiddle := middlewares.NewAuthMiddleware()
+	h := routers.NewHandler(orm, redisdb) // tambahin middleware
+	// e.Use(authMiddle.MiddleGate())
 	v1 := e.Group("/api")
 	h.Register(v1)
 	appHost := os.Getenv("APPLICATION_PORT")
